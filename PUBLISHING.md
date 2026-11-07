@@ -2,9 +2,9 @@
 
 Use two separate Minecraft **Mods** projects, both with a unique, original icon. Screenshots are optional for a mod and will be supplied later. Select **Minecraft 1.21.1** and **NeoForge** for both files. Mark initial files **Release** so the default CurseForge app install can find them; the version and description still identify this as a community beta.
 
-## 1. Atlantis Development API — Unofficial NeoForge Port
+## 1. Atlantis Development Community Port
 
-**Suggested slug:** `atlantis-development-api-neoforge-community-port`  
+**CurseForge page (under review):** https://www.curseforge.com/minecraft/mc-mods/atlantis-development-community-port  
 **Summary:** Unofficial NeoForge 1.21.1 port of the Atlantis Development API for Pixelmon sidemods.  
 **Category:** API and Library  
 **License:** MIT (the original also permits LGPL-3.0; the full original notice is included)  
@@ -23,15 +23,15 @@ The original Atlantis project is copyright Waterdude Studios Ltd and dual licens
 
 Initial unofficial NeoForge 1.21.1 build. Adapted Atlantis build and APIs for NeoForge; preserved original notices. Tested as a dependency of the companion radar in a Pixelmon 9.4.2 single-player instance.
 
-## 2. GameShark-inspired Pixelmon Radar
+## 2. SharkScope Radar
 
-**Suggested slug:** `gameshark-inspired-pixelmon-radar`  
+**CurseForge page (under review):** https://www.curseforge.com/minecraft/mc-mods/sharkscope-radar  
 **Summary:** Independent local Pixelmon radar for NeoForge 1.21.1 with category HUD and through-wall target markers.  
 **Category:** Addons / Map and Information (choose the closest available)  
 **License:** MIT  
 **Source / issues:** https://github.com/Tayranor/pixelmon-neoforge-community-ports  
 **File:** `gameshark-local-2.0.0-local.8.jar`  
-**Required dependency:** Atlantis Development API — Unofficial NeoForge Port  
+**Required dependency:** Atlantis Development Community Port. Add a formal CurseForge relation after Atlantis is approved; its currently unapproved project is not returned by the relation picker.  
 
 ### Description
 
@@ -51,15 +51,19 @@ Initial public beta of the independent NeoForge radar. Includes category HUD, Po
 
 ## Release note / community post
 
-### Reddit draft — r/PixelmonMod
+### Reddit draft — r/PixelmonMod, publish only after both CurseForge pages are approved
 
-**Title:** Unofficial Atlantis API port and an independent GameShark-inspired radar for Pixelmon 9.4.2 / NeoForge 1.21.1
+**Title:** Atlantis API community port + SharkScope radar for Pixelmon 9.4.2 / NeoForge 1.21.1
 
-I ported Atlantis Development API to NeoForge 1.21.1 and built a separate, independently written Pixelmon radar inspired by the old GameShark. The radar has a compact category HUD, custom Pokémon search, adjustable size and position, and colored markers for detected targets through terrain.
+I ported Atlantis Development API to NeoForge 1.21.1 and built SharkScope, a separate, independently written Pixelmon radar inspired by the old GameShark. The radar has a compact category HUD, custom Pokémon search, adjustable size and position, and colored markers for detected targets through terrain.
 
 These are unofficial community builds for Pixelmon 9.4.2. They are built and tested for single-player; multiplayer support is not validated. The radar scans loaded chunks only and does not reproduce every feature of the original GameShark. Original authors are credited and Atlantis's license notices are retained.
 
-Source and downloads: https://github.com/Tayranor/pixelmon-neoforge-community-ports
+Downloads (install both):
+- Atlantis: https://www.curseforge.com/minecraft/mc-mods/atlantis-development-community-port
+- Radar: https://www.curseforge.com/minecraft/mc-mods/sharkscope-radar
+
+Source: https://github.com/Tayranor/pixelmon-neoforge-community-ports
 
 Issues and PRs are welcome. I do not plan a fixed support schedule, so future compatibility will depend on community contributions. I'd be glad to hear what needs fixing first.
 
