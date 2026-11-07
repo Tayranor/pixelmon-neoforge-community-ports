@@ -1,6 +1,6 @@
 # CurseForge project copy
 
-Use two separate Minecraft **Mods** projects, both with a unique, original icon. Screenshots are optional for a mod and will be supplied later. Select **Minecraft 1.21.1** and **NeoForge** for both files. Mark initial files **Beta** until broader community testing; CurseForge's default app install requires a Release file.
+Use two separate Minecraft **Mods** projects, both with a unique, original icon. Screenshots are optional for a mod and will be supplied later. Select **Minecraft 1.21.1** and **NeoForge** for both files. Mark initial files **Release** so the default CurseForge app install can find them; the version and description still identify this as a community beta.
 
 ## 1. Atlantis Development API — Unofficial NeoForge Port
 
