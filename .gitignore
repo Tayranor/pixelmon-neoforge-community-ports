@@ -1,0 +1,15 @@
+.gradle/
+**/build/
+**/runs/
+**/run/
+**/logs/
+**/crash-reports/
+**/libs/*.jar
+**/config/
+*.log
+*.class
+.idea/
+.vscode/
+*.iml
+*.tmp
+*.bak

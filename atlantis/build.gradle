@@ -1,0 +1,46 @@
+buildscript {
+    repositories {
+        maven { url = "https://libraries.minecraft.net" }
+        maven { url = 'https://plugins.gradle.org/m2/' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        maven { url = 'https://jitpack.io' }
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.80'
+    id 'com.gradleup.shadow' version '8.3.6'
+}
+
+ext {
+    mod_name = "Atlantis"
+    mod_id = "atlantis"
+    mod_version = "9.0.0-local.2"
+    mod_desc = """
+Forge API primarily for Atlantis Development plugins, but available for all to use!
+Easy configuration and database data, easy chest UIs, easy player metadata, and more!
+"""
+
+    mod_authors = "Waterdude Studios Ltd; NeoForge port by Tayranor"
+    mod_credits = "Original Atlantis Development team: Water, Daniel N, and the wider community. Unofficial NeoForge port by Tayranor."
+
+    copyright_year = "2019-2025"
+    mod_license = "Copyright 2019-2025 Atlantis Development (Waterdude Studios Ltd), GNU LGPL 3 and MIT"
+
+    commissioner = ""
+    issue_tracker = "atlantis"
+
+    use_atlantis = true
+    use_pixelmon = true
+    use_fpapi = true
+
+    extra_deps = []
+}
+
+apply from: "portable.gradle"

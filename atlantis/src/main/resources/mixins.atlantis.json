@@ -1,0 +1,32 @@
+{
+  "required": true,
+  "minVersion": "0.7.10",
+  "package": "de.waterdu.atlantis.mixin",
+  "refmap": "atlantis.mixins.refmap.json",
+  "target": "@env(DEFAULT)",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "dev.MixinResourceKey",
+    "dev.MixinResourceLocation",
+    "entity.MixinCombatTracker",
+    "entity.MixinMerchantResultSlot",
+    "item.MixinBlock",
+    "item.MixinItem",
+    "item.MixinItemStack",
+    "item.MixinLootTable",
+    "level.MixinChunkAccess",
+    "network.MixinConnection",
+    "player.MixinCommandSourceStack",
+    "player.MixinPlayer",
+    "registry.MixinRegistryDataLoader"
+  ],
+  "client": [
+    "player.MixinLocalPlayer"
+  ],
+  "server": [
+    "player.MixinServerPlayer"
+  ],
+  "overwrites": {
+    "conformVisibility": true
+  }
+}

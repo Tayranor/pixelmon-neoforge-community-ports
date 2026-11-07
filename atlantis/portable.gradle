@@ -1,0 +1,80 @@
+version = mod_version
+group = 'de.waterdu.atlantis'
+base.archivesName = mod_id
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = '21.1.265'
+    runs {
+        client {
+            client()
+            gameDirectory = project.file('runs/client')
+        }
+    }
+    mods {
+        atlantis {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    shade
+}
+
+dependencies {
+    compileOnly files('libs/Pixelmon-1.21.1-9.4.2-universal.jar')
+    implementation 'com.zaxxer:HikariCP:5.1.0'
+    implementation('io.lettuce:lettuce-core:6.4.0.RELEASE') {
+        exclude group: 'io.netty'
+    }
+    shade('com.zaxxer:HikariCP:5.1.0') {
+        exclude group: 'org.slf4j'
+    }
+    shade('io.lettuce:lettuce-core:6.4.0.RELEASE') {
+        exclude group: 'io.netty'
+        exclude group: 'org.slf4j'
+    }
+    compileOnly 'org.jetbrains:annotations:24.1.0'
+    compileOnly 'org.jspecify:jspecify:1.0.0'
+}
+
+tasks.named('shadowJar') {
+    configurations = [project.configurations.shade]
+    exclude 'org/slf4j/**'
+    exclude 'META-INF/versions/**/org/slf4j/**'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('processResources', ProcessResources) {
+    def tokens = [
+        loader_version_range: '[4,)',
+        copyright_year: '2025',
+        mod_license: 'MIT',
+        issue_tracker_url: 'https://github.com/Tayranor/pixelmon-neoforge-community-ports/issues',
+        mod_id: mod_id,
+        mod_version: mod_version,
+        mod_name: mod_name,
+        mod_credits: mod_credits,
+        mod_authors: mod_authors,
+        mod_desc: mod_desc,
+        neoforge_version_range: '[21.1.248,)',
+        minecraft_version: '1.21.1',
+        pixelmon_version: '9.4.0'
+    ]
+    inputs.properties tokens
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand tokens
+    }
+}
+
+tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-Xmaxerrs', '500'] }
+sourceSets.main.java.exclude 'de/waterdu/atlantis/util/placeholder/impl/FPAPI.java'
