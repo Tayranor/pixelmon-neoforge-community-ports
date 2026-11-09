@@ -3,9 +3,9 @@ plugins {
     id 'net.neoforged.moddev' version '2.0.80'
 }
 
-version = '2.0.0-local.8'
-group = 'local.gameshark'
-base.archivesName = 'gameshark-local'
+version = '2.1.0'
+group = 'local.sharkscope'
+base.archivesName = 'sharkscope'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
@@ -14,8 +14,9 @@ neoForge {
     version = '21.1.265'
     runs {
         client { client(); gameDirectory = project.file('runs/client') }
+        server { server(); gameDirectory = project.file('runs/server') }
     }
-    mods { gameshark { sourceSet sourceSets.main } }
+    mods { sharkscope { sourceSet sourceSets.main } }
 }
 
 dependencies {

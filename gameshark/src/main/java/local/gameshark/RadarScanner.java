@@ -7,8 +7,11 @@ import com.pixelmonmod.pixelmon.entities.DenEntity;
 import com.pixelmonmod.pixelmon.entities.WormholeEntity;
 import com.pixelmonmod.pixelmon.entities.npcs.NPC;
 import com.pixelmonmod.pixelmon.entities.pixelmon.PixelmonEntity;
+import com.pixelmonmod.pixelmon.api.npc.interaction.result.type.PlayerStartNPCBattleInteractionResult;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.MinecartChest;
@@ -48,19 +51,19 @@ public final class RadarScanner {
                 String name = pokemon.getSpecies().getName();
                 if (pixelmon.isLegendary()) add(hits, settings, Mode.LEGENDARIES, name, entity.blockPosition(), player, entity);
                 if (pokemon.isShiny()) add(hits, settings, Mode.SHINIES, name, entity.blockPosition(), player, entity);
-                if (pixelmon.isBossPokemon()) add(hits, settings, Mode.BOSSES, name, entity.blockPosition(), player, entity);
+                if (pixelmon.isBossPokemon() || pokemon.isBoss()) add(hits, settings, Mode.BOSSES, name, entity.blockPosition(), player, entity);
                 if (pokemon.getSpecies().isUltraBeast()) add(hits, settings, Mode.ULTRA_BEASTS, name, entity.blockPosition(), player, entity);
                 if (!pokemon.isDefaultPalette() && !pokemon.isShiny()) add(hits, settings, Mode.SPECIAL_PALETTES, name, entity.blockPosition(), player, entity);
                 if (settings.trackedPokemon.stream().anyMatch(wanted -> wanted.equalsIgnoreCase(name))
                         || custom != null && custom.matches(pixelmon)) add(hits, settings, Mode.CUSTOM, name, entity.blockPosition(), player, entity);
             } else if (entity instanceof NPC npc) {
-                if (npc.getParty() != null && npc.getParty().countAblePokemon() > 0) add(hits, settings, Mode.TRAINERS, npc.getName().getString(), entity.blockPosition(), player, entity);
-                boolean questTitle = npc.getTitle() != null && npc.getTitle().getString().toLowerCase().contains("quest");
-                boolean questIcon = npc.getIcon() != null && npc.getIcon().getResource() != null && npc.getIcon().getResource().getPath().contains("quest");
-                if (questTitle || questIcon) add(hits, settings, Mode.QUEST_GIVERS, npc.getName().getString(), entity.blockPosition(), player, entity);
-            } else if (entity instanceof WormholeEntity) add(hits, settings, Mode.ULTRA_WORMHOLES, "Wormhole", entity.blockPosition(), player, entity);
-            else if (entity instanceof DenEntity) add(hits, settings, Mode.MAX_RAID_DENS, "Raid den", entity.blockPosition(), player, entity);
-            else if (entity instanceof MinecartChest) add(hits, settings, Mode.CHEST_MINECARTS, "Minecart chest", entity.blockPosition(), player, entity);
+                String npcName = npc.getName().getString();
+                if (isQuestGiver(npc)) add(hits, settings, Mode.QUEST_GIVERS, npcName, entity.blockPosition(), player, entity);
+                if (isTrainer(npc)) add(hits, settings, Mode.TRAINERS, npcName, entity.blockPosition(), player, entity);
+                add(hits, settings, Mode.NPCS, npcName, entity.blockPosition(), player, entity);
+            } else if (entity instanceof WormholeEntity) add(hits, settings, Mode.ULTRA_WORMHOLES, label("wormhole"), entity.blockPosition(), player, entity);
+            else if (entity instanceof DenEntity) add(hits, settings, Mode.MAX_RAID_DENS, label("raid_den"), entity.blockPosition(), player, entity);
+            else if (entity instanceof MinecartChest) add(hits, settings, Mode.CHEST_MINECARTS, label("minecart_chest"), entity.blockPosition(), player, entity);
             else if (entity instanceof Player) add(hits, settings, Mode.PLAYERS, entity.getName().getString(), entity.blockPosition(), player, entity);
         }
         int playerCx = player.blockPosition().getX() >> 4;
@@ -73,17 +76,48 @@ public final class RadarScanner {
                 for (BlockEntity block : chunk.getBlockEntities().values()) {
                     BlockPos pos = block.getBlockPos();
                     if (pos.distSqr(player.blockPosition()) > radius2) continue;
-                    if (block instanceof PokeChestTileEntity) add(hits, settings, Mode.POKE_LOOT, "Poké Loot", pos, player);
-                    else if (block instanceof PokeStopTileEntity) add(hits, settings, Mode.POKE_STOPS, "Poké Stop", pos, player);
-                    else if (block instanceof ZygardeCellTileEntity) add(hits, settings, Mode.ZYGARDE_CELLS, "Zygarde cell", pos, player);
+                    if (block instanceof PokeChestTileEntity) add(hits, settings, Mode.POKE_LOOT, label("poke_loot"), pos, player);
+                    else if (block instanceof PokeStopTileEntity) add(hits, settings, Mode.POKE_STOPS, label("poke_stop"), pos, player);
+                    else if (block instanceof ZygardeCellTileEntity) add(hits, settings, Mode.ZYGARDE_CELLS, label("zygarde_cell"), pos, player);
                     else if (block instanceof TimespaceAltarTileEntity || block instanceof BellTileEntity || block instanceof BirdShrineTileEntity || block instanceof IlexShrineTileEntity || block instanceof ArcChaliceTileEntity)
-                        add(hits, settings, Mode.LEGENDARY_SUMMONS, "Legendary summon", pos, player);
-                    else if (block instanceof ChestBlockEntity) add(hits, settings, Mode.CHESTS, "Chest", pos, player);
+                        add(hits, settings, Mode.LEGENDARY_SUMMONS, label("legendary_summon"), pos, player);
+                    else if (block instanceof ChestBlockEntity) add(hits, settings, Mode.CHESTS, label("chest"), pos, player);
                 }
             }
         }
         hits.sort(Comparator.comparingInt(Hit::distance));
         return List.copyOf(hits);
+    }
+
+    private static String label(String name) {
+        return Component.translatable("sharkscope.hit." + name).getString();
+    }
+
+    private static boolean isTrainer(NPC npc) {
+        if (npc.getLinkedPresetKey() != null && npc.getLinkedPresetKey().getPath().startsWith("battle/")) return true;
+        if (npc.getParty() != null && npc.getParty().countAblePokemon() > 0) return true;
+        if (npc.getInteractions() != null) {
+            for (var interaction : npc.getInteractions()) {
+                for (var result : interaction.getResults()) {
+                    if (result instanceof PlayerStartNPCBattleInteractionResult) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isQuestGiver(NPC npc) {
+        if (npc.getLinkedPresetKey() != null && npc.getLinkedPresetKey().getPath().contains("quest")) return true;
+        if (npc.getIcon() != null && npc.getIcon().getResource() != null) {
+            String icon = npc.getIcon().getResource().getPath().toLowerCase(java.util.Locale.ROOT);
+            if (icon.contains("quest") || icon.contains("exclamation") || icon.endsWith("/question.png")) return true;
+        }
+        Component title = npc.getTitle();
+        if (title == null) return false;
+        String value = title.getString().toLowerCase(java.util.Locale.ROOT);
+        if (value.contains("quest") || value.contains("квест")) return true;
+        return title.getContents() instanceof TranslatableContents translated
+                && translated.getKey().toLowerCase(java.util.Locale.ROOT).contains("quest");
     }
 
     private static void add(List<Hit> hits, RadarSettings settings, Mode mode, String name, BlockPos pos, Player player) {
@@ -95,4 +129,3 @@ public final class RadarScanner {
                 (int) Math.sqrt(pos.distSqr(player.blockPosition())), entity == null ? new AABB(pos) : entity.getBoundingBox(), entity));
     }
 }
-

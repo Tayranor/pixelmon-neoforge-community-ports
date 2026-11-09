@@ -28,12 +28,13 @@ public final class RadarSettings {
     public int hudScale = 100;
     public final EnumSet<Mode> enabled = EnumSet.allOf(Mode.class);
 
-    private static Path path() { return FMLPaths.CONFIGDIR.get().resolve("gameshark-local.properties"); }
+    private static Path path() { return FMLPaths.CONFIGDIR.get().resolve("sharkscope.properties"); }
 
     public static RadarSettings load() {
         var result = new RadarSettings();
         var p = new Properties();
-        try (InputStream in = Files.newInputStream(path())) { p.load(in); }
+        Path source = Files.exists(path()) ? path() : FMLPaths.CONFIGDIR.get().resolve("gameshark-local.properties");
+        try (InputStream in = Files.newInputStream(source)) { p.load(in); }
         catch (IOException ignored) { return result; }
         result.active = Boolean.parseBoolean(p.getProperty("active", "true"));
         result.minimized = Boolean.parseBoolean(p.getProperty("minimized", "false"));
@@ -83,7 +84,7 @@ public final class RadarSettings {
         for (var mode : Mode.values()) p.setProperty("mode." + mode.name(), String.valueOf(enabled.contains(mode)));
         try {
             Files.createDirectories(path().getParent());
-            try (OutputStream out = Files.newOutputStream(path())) { p.store(out, "GameShark Local"); }
+            try (OutputStream out = Files.newOutputStream(path())) { p.store(out, "SharkScope"); }
         } catch (IOException ignored) {}
     }
 }

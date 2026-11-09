@@ -5,6 +5,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -13,6 +14,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
@@ -23,9 +25,9 @@ import org.joml.Vector4f;
 import java.util.List;
 import java.util.HashSet;
 
-@EventBusSubscriber(modid = "gameshark", value = Dist.CLIENT)
+@EventBusSubscriber(modid = "sharkscope", value = Dist.CLIENT)
 public final class RadarClient {
-    private static final String CATEGORY = "GameShark";
+    private static final String CATEGORY = "key.categories.sharkscope";
     private static final KeyMapping TOGGLE = key("toggle", GLFW.GLFW_KEY_0);
     private static final KeyMapping TOGGLE_MODE = key("toggle_mode", GLFW.GLFW_KEY_PERIOD);
     private static final KeyMapping PREVIOUS = key("previous", GLFW.GLFW_KEY_1);
@@ -47,7 +49,16 @@ public final class RadarClient {
         return new KeyMapping("key.gameshark." + name, InputConstants.Type.KEYSYM, code, CATEGORY);
     }
 
-    @EventBusSubscriber(modid = "gameshark", value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+    public static void setServerAllowed(boolean allowed) {
+        RadarPermission.setClientAllowed(allowed);
+        if (!allowed) hits = List.of();
+    }
+
+    private static boolean permitted(Minecraft mc) {
+        return mc.hasSingleplayerServer() || RadarPermission.clientAllowed();
+    }
+
+    @EventBusSubscriber(modid = "sharkscope", value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
     public static final class ModEvents {
         @SubscribeEvent
         public static void keys(RegisterKeyMappingsEvent event) {
@@ -57,8 +68,18 @@ public final class RadarClient {
 
         @SubscribeEvent
         public static void gui(RegisterGuiLayersEvent event) {
-            event.registerAboveAll(ResourceLocation.fromNamespaceAndPath("gameshark", "radar"), RadarClient::render);
+            event.registerAboveAll(ResourceLocation.fromNamespaceAndPath("sharkscope", "radar"), RadarClient::render);
         }
+    }
+
+    @SubscribeEvent
+    public static void login(ClientPlayerNetworkEvent.LoggingIn event) {
+        setServerAllowed(false);
+    }
+
+    @SubscribeEvent
+    public static void logout(ClientPlayerNetworkEvent.LoggingOut event) {
+        setServerAllowed(false);
     }
 
     @SubscribeEvent
@@ -75,13 +96,20 @@ public final class RadarClient {
         while (MINIMIZE.consumeClick()) SETTINGS.minimized = !SETTINGS.minimized;
         while (CROSSHAIRS.consumeClick()) SETTINGS.crosshairs = !SETTINGS.crosshairs;
         while (CUSTOM.consumeClick()) mc.setScreen(new RadarScreen());
-        if (++tick % SETTINGS.updateTicks == 0 && SETTINGS.active) hits = RadarScanner.scan(mc, SETTINGS);
+        tick++;
+        if (!permitted(mc)) hits = List.of();
+        else if (tick % SETTINGS.updateTicks == 0 && SETTINGS.active) hits = RadarScanner.scan(mc, SETTINGS);
         if (tick % 100 == 0) SETTINGS.save();
     }
 
     private static void render(GuiGraphics graphics, net.minecraft.client.DeltaTracker delta) {
         var mc = Minecraft.getInstance();
         if (mc.player == null || !SETTINGS.active || mc.options.hideGui) return;
+        if (!permitted(mc)) {
+            graphics.drawString(mc.font, Component.translatable("sharkscope.server.disabled"),
+                    SETTINGS.offsetX, SETTINGS.offsetY, 0xFFFF7777, true);
+            return;
+        }
         renderMarkers(graphics, mc);
         Mode mode = Mode.values()[selected];
         int width = Mode.values().length * 12;
@@ -114,7 +142,7 @@ public final class RadarClient {
         graphics.fill(cardX, y + 14, cardX + cardWidth, y + 59, 0xB8000000);
         graphics.fill(cardX, y + 14, cardX + 2, y + 59, color);
         boolean enabled = SETTINGS.enabled.contains(mode);
-        graphics.drawString(mc.font, mode.label + (enabled ? "" : " [OFF]"), cardX + 6, y + 18,
+        graphics.drawString(mc.font, mode.label() + (enabled ? "" : " [" + Component.translatable("sharkscope.off").getString() + "]"), cardX + 6, y + 18,
                 enabled ? color : 0xFFFF5555, true);
         RadarScanner.Hit nearest = null;
         int count = 0;
@@ -123,12 +151,12 @@ public final class RadarClient {
             if (nearest == null) nearest = hit;
             count++;
         }
-        if (!enabled) graphics.drawString(mc.font, "Category disabled", cardX + 6, y + 39, 0xFFFF7777, true);
-        else if (nearest == null) graphics.drawString(mc.font, "No targets nearby", cardX + 6, y + 39, 0xFFAAAAAA, true);
+        if (!enabled) graphics.drawString(mc.font, Component.translatable("sharkscope.category.disabled"), cardX + 6, y + 39, 0xFFFF7777, true);
+        else if (nearest == null) graphics.drawString(mc.font, Component.translatable("sharkscope.no_targets"), cardX + 6, y + 39, 0xFFAAAAAA, true);
         else {
             graphics.drawString(mc.font, mc.font.plainSubstrByWidth(nearest.name(), cardWidth - 12), cardX + 6, y + 31, 0xFFFFFFFF, true);
             String direction = SETTINGS.crosshairs ? bearing(mc, nearest) + "  " : "";
-            graphics.drawString(mc.font, direction + nearest.distance() + "m  (" + count + ")", cardX + 6, y + 45, color, true);
+            graphics.drawString(mc.font, direction + Component.translatable("sharkscope.distance", nearest.distance(), count).getString(), cardX + 6, y + 45, color, true);
         }
         graphics.pose().popPose();
     }

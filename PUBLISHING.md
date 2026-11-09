@@ -4,7 +4,7 @@ Use two separate Minecraft **Mods** projects, both with a unique, original icon.
 
 ## 1. Atlantis Development Community Port
 
-**CurseForge page (under review):** https://www.curseforge.com/minecraft/mc-mods/atlantis-development-community-port  
+**CurseForge page:** https://www.curseforge.com/minecraft/mc-mods/atlantis-development-community-port
 **Summary:** Unofficial NeoForge 1.21.1 port of the Atlantis Development API for Pixelmon sidemods.  
 **Category:** API and Library  
 **License:** MIT (the original also permits LGPL-3.0; the full original notice is included)  
@@ -25,13 +25,13 @@ Initial unofficial NeoForge 1.21.1 build. Adapted Atlantis build and APIs for Ne
 
 ## 2. SharkScope Radar
 
-**CurseForge page (under review):** https://www.curseforge.com/minecraft/mc-mods/sharkscope-radar  
+**CurseForge page:** https://www.curseforge.com/minecraft/mc-mods/sharkscope-radar
 **Summary:** Independent local Pixelmon radar for NeoForge 1.21.1 with category HUD and through-wall target markers.  
 **Category:** Addons / Map and Information (choose the closest available)  
 **License:** MIT  
 **Source / issues:** https://github.com/Tayranor/pixelmon-neoforge-community-ports  
-**File:** `gameshark-local-2.0.0-local.8.jar`  
-**Required dependency:** Atlantis Development Community Port. Add a formal CurseForge relation after Atlantis is approved; its currently unapproved project is not returned by the relation picker.  
+**Current release file:** `sharkscope-2.1.0.jar`
+**Required dependency:** Atlantis Development Community Port.
 
 ### Description
 
@@ -39,15 +39,15 @@ An **independently written, unofficial** Pixelmon radar inspired by the older [G
 
 For Minecraft 1.21.1, NeoForge 21.1.x, and Pixelmon 9.4.2. Install the companion Atlantis Development API port alongside this JAR. Pixelmon is required and not included.
 
-The configurable HUD shows enabled target categories, nearby target details and direction. Colored corner markers highlight detected targets, including through terrain. The radar tracks Pokémon categories, custom Pokémon selections, loot, chests, trainers, and other local targets. Search for a Pokémon by English or current game-language name in the in-game settings. Controls are under GameShark in Minecraft's key bindings; HUD position, size and scan range are configurable.
+The configurable HUD shows enabled target categories, nearby target details and direction. Colored corner markers highlight detected targets, including through terrain. The radar tracks Pokémon categories, custom Pokémon selections, loot, chests, trainers, NPCs, and other local targets. Search for a Pokémon by English or current game-language name in the in-game settings. Controls are under SharkScope in Minecraft's key bindings; HUD position, size and scan range are configurable. The interface follows Minecraft's English or Russian language setting.
 
-The radar scans only entities and block entities in **loaded chunks**. It was designed and tested for single-player use. Multiplayer permissions, original server-side configuration and commands are not implemented. Some detection categories are best effort. See [GitHub](https://github.com/Tayranor/pixelmon-neoforge-community-ports) for source, install notes, known limits, and issues.
+The radar scans only entities and block entities in **loaded chunks**. Version 2.1.0 keeps the radar off on multiplayer servers unless the server also installs SharkScope and grants permission. Server owners can deny permission with `config/sharkscope-server.properties` containing `enabled=false`. Quest-giver detection remains best effort for custom NPCs. See [GitHub](https://github.com/Tayranor/pixelmon-neoforge-community-ports) for source, install notes, known limits, and issues.
 
 Community fixes are welcome. Maintenance and future-version support are best effort, with no promised response time.
 
 ### File changelog
 
-Initial public beta of the independent NeoForge radar. Includes category HUD, Pokémon picker, configurable HUD size and position, key bindings, and through-wall target corner markers.
+Version 2.1.0: renamed visible GameShark labels to SharkScope; added a server opt-in permission, broader NPC, quest-giver and boss detection, and Russian localization.
 
 ## Release note / community post
 

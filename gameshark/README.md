@@ -1,9 +1,9 @@
-# GameShark-inspired local radar — independent community rewrite
+# SharkScope Radar — independent community rewrite
 
 This is an unofficial, newly written Pixelmon radar for Minecraft 1.21.1 / NeoForge 21.1.x / Pixelmon 9.4.2. It is inspired by the search workflow of [Waterdude's original GameShark](https://www.curseforge.com/minecraft/mc-mods/pixelmon-gameshark), but includes none of that project's source code or graphics and is not endorsed by its author.
 
-The radar finds targets in loaded chunks up to the configured radius and shows all enabled categories as colored corner markers through terrain. Its HUD can be positioned and scaled. The Pokémon picker searches English and translated names and shows up to five suggestions. The existing client-side settings are saved to `config/gameshark-local.properties`.
+The radar finds targets in loaded chunks up to the configured radius and shows all enabled categories as colored corner markers through terrain. Its HUD can be positioned and scaled. The Pokémon picker searches English and translated names and shows up to five suggestions. Client settings are saved to `config/sharkscope.properties`; an existing `gameshark-local.properties` is imported automatically on first save. English and Russian UI text follow Minecraft's language setting. Existing keybinding IDs are retained so custom controls keep working.
 
-This implementation is intended for single-player use. Server permissions, administrator commands, and full feature parity with the original GameShark are not implemented. Quest giver detection is heuristic. Maintenance and support are best effort, without guaranteed updates.
+Single-player works without a server installation. On multiplayer servers the radar stays disabled unless the server also installs SharkScope and sends its opt-in permission. Server owners can set `enabled=false` in `config/sharkscope-server.properties` to deny the radar even with the mod installed; the setting is read when a player joins. This is an honest-client restriction, not an anti-cheat. Trainer and quest-giver detection use NPC presets, interactions, titles, and icons where available; custom NPCs may still need special handling. Maintenance and support are best effort, without guaranteed updates.
 
-Install `gameshark-local-2.0.0-local.8.jar` alongside Pixelmon 9.4.2 and the Atlantis Development community port. See the [repository README](../README.md) for install and build steps.
+Install `sharkscope-2.1.0.jar` alongside Pixelmon 9.4.2 and the Atlantis Development community port. Server owners need both dependencies there too. See the [repository README](../README.md) for install and build steps.

@@ -1,5 +1,8 @@
 package local.gameshark;
 
+import net.minecraft.network.chat.Component;
+import java.util.Locale;
+
 public enum Mode {
     LEGENDARIES("Legendaries", 0xF6BD38),
     SHINIES("Shinies", 0xFF69B4),
@@ -8,6 +11,7 @@ public enum Mode {
     SPECIAL_PALETTES("Special palettes", 0xCC34EB),
     QUEST_GIVERS("Quest givers", 0xD1C708),
     TRAINERS("Trainers", 0x3056E3),
+    NPCS("NPCs", 0x42C6BB),
     PLAYERS("Players", 0x888888),
     ULTRA_WORMHOLES("Ultra Wormholes", 0x820AD4),
     LEGENDARY_SUMMONS("Legendary summons", 0xA41536),
@@ -25,5 +29,9 @@ public enum Mode {
     Mode(String label, int rgb) {
         this.label = label;
         this.rgb = rgb;
+    }
+
+    public String label() {
+        return Component.translatable("sharkscope.mode." + name().toLowerCase(Locale.ROOT)).getString();
     }
 }
