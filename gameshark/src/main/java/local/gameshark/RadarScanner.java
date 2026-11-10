@@ -1,7 +1,5 @@
 package local.gameshark;
 
-import com.pixelmonmod.api.pokemon.PokemonSpecification;
-import com.pixelmonmod.api.pokemon.PokemonSpecificationProxy;
 import com.pixelmonmod.pixelmon.blocks.tileentity.*;
 import com.pixelmonmod.pixelmon.entities.DenEntity;
 import com.pixelmonmod.pixelmon.entities.WormholeEntity;
@@ -35,27 +33,21 @@ public final class RadarScanner {
         if (mc.player == null || mc.level == null) return List.of();
         Player player = mc.player;
         var hits = new ArrayList<Hit>();
-        PokemonSpecification custom = null;
-        if (!settings.customSpec.isBlank()) {
-            try {
-                var parsed = PokemonSpecificationProxy.create(settings.customSpec.split("\\s+"));
-                if (parsed.wasSuccess()) custom = parsed.get();
-            } catch (RuntimeException ignored) {}
-        }
         int radius2 = settings.radius * settings.radius;
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity == player || entity.distanceToSqr(player) > radius2) continue;
             if (entity instanceof PixelmonEntity pixelmon) {
                 var pokemon = pixelmon.getPokemon();
                 if (pokemon == null) continue;
+                if (pixelmon.hasOwner()) continue;
                 String name = pokemon.getSpecies().getName();
                 if (pixelmon.isLegendary()) add(hits, settings, Mode.LEGENDARIES, name, entity.blockPosition(), player, entity);
                 if (pokemon.isShiny()) add(hits, settings, Mode.SHINIES, name, entity.blockPosition(), player, entity);
                 if (pixelmon.isBossPokemon() || pokemon.isBoss()) add(hits, settings, Mode.BOSSES, name, entity.blockPosition(), player, entity);
                 if (pokemon.getSpecies().isUltraBeast()) add(hits, settings, Mode.ULTRA_BEASTS, name, entity.blockPosition(), player, entity);
                 if (!pokemon.isDefaultPalette() && !pokemon.isShiny()) add(hits, settings, Mode.SPECIAL_PALETTES, name, entity.blockPosition(), player, entity);
-                if (settings.trackedPokemon.stream().anyMatch(wanted -> wanted.equalsIgnoreCase(name))
-                        || custom != null && custom.matches(pixelmon)) add(hits, settings, Mode.CUSTOM, name, entity.blockPosition(), player, entity);
+                if (settings.trackedPokemon.stream().anyMatch(wanted -> wanted.equalsIgnoreCase(name)))
+                    add(hits, settings, Mode.CUSTOM, name, entity.blockPosition(), player, entity);
             } else if (entity instanceof NPC npc) {
                 String npcName = npc.getName().getString();
                 if (isQuestGiver(npc)) add(hits, settings, Mode.QUEST_GIVERS, npcName, entity.blockPosition(), player, entity);

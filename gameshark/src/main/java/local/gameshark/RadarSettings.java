@@ -19,7 +19,6 @@ public final class RadarSettings {
     public int updateTicks = 20;
     public int x = -8;
     public int y = 8;
-    public String customSpec = "";
     public final Set<String> trackedPokemon = new LinkedHashSet<>();
     public String anchor = "TOP_RIGHT";
     public int offsetX = 8;
@@ -43,13 +42,8 @@ public final class RadarSettings {
         result.updateTicks = number(p.getProperty("updateTicks"), 20, 5, 200);
         result.x = number(p.getProperty("x"), -8, -5000, 5000);
         result.y = number(p.getProperty("y"), 8, 0, 5000);
-        result.customSpec = p.getProperty("customSpec", "");
         String saved = p.getProperty("trackedPokemon", "");
         for (String name : saved.split(",")) if (!name.isBlank()) result.trackedPokemon.add(name.trim());
-        if (result.trackedPokemon.isEmpty() && result.customSpec.startsWith("species:")) {
-            String old = result.customSpec.substring(8).split("\\s+")[0];
-            if (!old.isBlank()) result.trackedPokemon.add(old);
-        }
         String anchor = p.getProperty("anchor", "TOP_RIGHT");
         if (Set.of("TOP_LEFT", "TOP_RIGHT", "BOTTOM_LEFT", "BOTTOM_RIGHT").contains(anchor)) result.anchor = anchor;
         result.offsetX = number(p.getProperty("offsetX"), 8, 0, 5000);
@@ -74,7 +68,6 @@ public final class RadarSettings {
         p.setProperty("updateTicks", String.valueOf(updateTicks));
         p.setProperty("x", String.valueOf(x));
         p.setProperty("y", String.valueOf(y));
-        p.setProperty("customSpec", customSpec);
         p.setProperty("trackedPokemon", String.join(",", trackedPokemon));
         p.setProperty("anchor", anchor);
         p.setProperty("offsetX", String.valueOf(offsetX));
