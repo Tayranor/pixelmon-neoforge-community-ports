@@ -30,7 +30,7 @@ Initial unofficial NeoForge 1.21.1 build. Adapted Atlantis build and APIs for Ne
 **Category:** Addons / Map and Information (choose the closest available)  
 **License:** MIT  
 **Source / issues:** https://github.com/Tayranor/pixelmon-neoforge-community-ports  
-**Current release file:** `sharkscope-2.1.0.jar`
+**Current release file:** `sharkscope-2.1.1.jar`
 **Required dependency:** Atlantis Development Community Port.
 
 ### Description
@@ -46,6 +46,8 @@ The radar scans only entities and block entities in **loaded chunks**. Version 2
 Community fixes are welcome. Maintenance and future-version support are best effort, with no promised response time.
 
 ### File changelog
+
+Version 2.1.1: excluded player-owned Pokémon from radar results and fixed custom tracking so only explicitly selected species match.
 
 Version 2.1.0: renamed visible GameShark labels to SharkScope; added a server opt-in permission, broader NPC, quest-giver and boss detection, and Russian localization.
 
