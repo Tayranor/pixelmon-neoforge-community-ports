@@ -1,6 +1,7 @@
 package local.gameshark;
 
 import com.pixelmonmod.pixelmon.blocks.tileentity.*;
+import com.pixelmonmod.pixelmon.blocks.enums.EnumPokeChestType;
 import com.pixelmonmod.pixelmon.entities.DenEntity;
 import com.pixelmonmod.pixelmon.entities.WormholeEntity;
 import com.pixelmonmod.pixelmon.entities.npcs.NPC;
@@ -23,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public final class RadarScanner {
+    private static final int RARE_LOOT_RADIUS = 512;
     public record Hit(Mode mode, String name, BlockPos pos, int distance, AABB initialBox, Entity entity) {
         public AABB box() { return entity == null || entity.isRemoved() ? initialBox : entity.getBoundingBox(); }
     }
@@ -60,16 +62,29 @@ public final class RadarScanner {
         }
         int playerCx = player.blockPosition().getX() >> 4;
         int playerCz = player.blockPosition().getZ() >> 4;
-        int chunks = Math.min(16, (settings.radius + 15) / 16);
+        boolean scanRareLoot = settings.enabled.contains(Mode.MASTER_LOOT) || settings.enabled.contains(Mode.BEAST_LOOT);
+        int blockRadius = scanRareLoot ? RARE_LOOT_RADIUS : settings.radius;
+        int blockRadius2 = blockRadius * blockRadius;
+        int chunks = (blockRadius + 15) / 16;
         for (int cx = playerCx - chunks; cx <= playerCx + chunks; cx++) {
             for (int cz = playerCz - chunks; cz <= playerCz + chunks; cz++) {
                 LevelChunk chunk = mc.level.getChunkSource().getChunk(cx, cz, false);
                 if (chunk == null) continue;
                 for (BlockEntity block : chunk.getBlockEntities().values()) {
                     BlockPos pos = block.getBlockPos();
-                    if (pos.distSqr(player.blockPosition()) > radius2) continue;
-                    if (block instanceof PokeChestTileEntity) add(hits, settings, Mode.POKE_LOOT, label("poke_loot"), pos, player);
-                    else if (block instanceof PokeStopTileEntity) add(hits, settings, Mode.POKE_STOPS, label("poke_stop"), pos, player);
+                    double distance2 = pos.distSqr(player.blockPosition());
+                    if (distance2 > blockRadius2) continue;
+                    if (block instanceof PokeChestTileEntity chest) {
+                        EnumPokeChestType type = chest.getChestType();
+                        if (type == EnumPokeChestType.MASTERBALL)
+                            add(hits, settings, Mode.MASTER_LOOT, label("master_loot"), pos, player);
+                        else if (type == EnumPokeChestType.BEASTBALL)
+                            add(hits, settings, Mode.BEAST_LOOT, label("beast_loot"), pos, player);
+                        if (distance2 <= radius2) add(hits, settings, Mode.POKE_LOOT, label("poke_loot"), pos, player);
+                        continue;
+                    }
+                    if (distance2 > radius2) continue;
+                    if (block instanceof PokeStopTileEntity) add(hits, settings, Mode.POKE_STOPS, label("poke_stop"), pos, player);
                     else if (block instanceof ZygardeCellTileEntity) add(hits, settings, Mode.ZYGARDE_CELLS, label("zygarde_cell"), pos, player);
                     else if (block instanceof TimespaceAltarTileEntity || block instanceof BellTileEntity || block instanceof BirdShrineTileEntity || block instanceof IlexShrineTileEntity || block instanceof ArcChaliceTileEntity)
                         add(hits, settings, Mode.LEGENDARY_SUMMONS, label("legendary_summon"), pos, player);

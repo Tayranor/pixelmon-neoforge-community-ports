@@ -5,7 +5,7 @@ issueTrackerURL="https://github.com/Tayranor/pixelmon-neoforge-community-ports/i
 
 [[mods]]
 modId="sharkscope"
-version="2.1.1"
+version="2.1.2"
 displayName="SharkScope"
 description='''Independent Pixelmon radar with server opt-in, target markers, and custom tracking. Community contributions welcome; ongoing support is not promised.'''
 authors="Tayranor"

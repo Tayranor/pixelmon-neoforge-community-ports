@@ -10,6 +10,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.util.Mth;
+import com.mojang.math.Axis;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -180,52 +181,86 @@ public final class RadarClient {
             } else if (drawnBlocks.add(hit.pos())) {
                 var state = mc.level.getBlockState(hit.pos());
                 var shape = state.getShape(mc.level, hit.pos(), CollisionContext.empty());
-                if (shape.isEmpty()) continue;
-                box = shape.bounds().move(hit.pos());
+                box = shape.isEmpty() ? new AABB(hit.pos()) : shape.bounds().move(hit.pos());
             } else continue;
             drawBrackets(graphics, box, 0xFF000000 | hit.mode().rgb);
         }
     }
 
     private static void drawBrackets(GuiGraphics graphics, AABB box, int color) {
-        float left = Float.POSITIVE_INFINITY, top = Float.POSITIVE_INFINITY;
-        float right = Float.NEGATIVE_INFINITY, bottom = Float.NEGATIVE_INFINITY;
+        Vector4f[] corners = new Vector4f[8];
         for (int i = 0; i < 8; i++) {
             double wx = (i & 1) == 0 ? box.minX : box.maxX;
             double wy = (i & 2) == 0 ? box.minY : box.maxY;
             double wz = (i & 4) == 0 ? box.minZ : box.maxZ;
-            Vector4f point = new Vector4f((float) (wx - cameraPosition.x),
+            corners[i] = new Vector4f((float) (wx - cameraPosition.x),
                     (float) (wy - cameraPosition.y), (float) (wz - cameraPosition.z), 1f).mul(viewProjection);
-            if (point.w <= 0.05f) return;
-            float sx = (point.x / point.w * 0.5f + 0.5f) * graphics.guiWidth();
-            float sy = (0.5f - point.y / point.w * 0.5f) * graphics.guiHeight();
-            left = Math.min(left, sx); right = Math.max(right, sx);
-            top = Math.min(top, sy); bottom = Math.max(bottom, sy);
         }
-        if (right < 0 || bottom < 0 || left > graphics.guiWidth() || top > graphics.guiHeight()) return;
-        int x1 = Mth.clamp((int) left, 0, graphics.guiWidth());
-        int x2 = Mth.clamp((int) right, 0, graphics.guiWidth());
-        int y1 = Mth.clamp((int) top, 0, graphics.guiHeight());
-        int y2 = Mth.clamp((int) bottom, 0, graphics.guiHeight());
-        if (x2 - x1 < 4 || y2 - y1 < 4) return;
-        int arm = Math.max(5, Math.min(14, Math.min((x2 - x1) / 3, (y2 - y1) / 3)));
         int bright = 0xFF000000
                 | (((((color >> 16) & 255) * 3 + 510) / 5) << 16)
                 | (((((color >> 8) & 255) * 3 + 510) / 5) << 8)
                 | (((color & 255) * 3 + 510) / 5);
-        stroke(graphics, x1, y1, x1 + arm, y1 + 3, bright);
-        stroke(graphics, x1, y1, x1 + 3, y1 + arm, bright);
-        stroke(graphics, x2 - arm, y1, x2, y1 + 3, bright);
-        stroke(graphics, x2 - 3, y1, x2, y1 + arm, bright);
-        stroke(graphics, x1, y2 - 3, x1 + arm, y2, bright);
-        stroke(graphics, x1, y2 - arm, x1 + 3, y2, bright);
-        stroke(graphics, x2 - arm, y2 - 3, x2, y2, bright);
-        stroke(graphics, x2 - 3, y2 - arm, x2, y2, bright);
+        float left = Float.POSITIVE_INFINITY, top = Float.POSITIVE_INFINITY;
+        float right = Float.NEGATIVE_INFINITY, bottom = Float.NEGATIVE_INFINITY;
+        for (int i = 0; i < 8; i++) {
+            Vector4f corner = corners[i];
+            if (corner.w > 0.05f) {
+                float x = (corner.x / corner.w * 0.5f + 0.5f) * graphics.guiWidth();
+                float y = (0.5f - corner.y / corner.w * 0.5f) * graphics.guiHeight();
+                left = Math.min(left, x); right = Math.max(right, x);
+                top = Math.min(top, y); bottom = Math.max(bottom, y);
+            }
+            for (int axis = 0; axis < 3; axis++) {
+                Vector4f end = new Vector4f(corner).lerp(corners[i ^ (1 << axis)], 0.28f);
+                drawSegment(graphics, corner, end, bright);
+            }
+        }
+        if (right - left < 8 && bottom - top < 8) {
+            Vector4f center = new Vector4f((float) (box.getCenter().x - cameraPosition.x),
+                    (float) (box.getCenter().y - cameraPosition.y),
+                    (float) (box.getCenter().z - cameraPosition.z), 1f).mul(viewProjection);
+            if (center.w <= 0.05f) return;
+            int x = (int) ((center.x / center.w * 0.5f + 0.5f) * graphics.guiWidth());
+            int y = (int) ((0.5f - center.y / center.w * 0.5f) * graphics.guiHeight());
+            if (x < 0 || x >= graphics.guiWidth() || y < 0 || y >= graphics.guiHeight()) return;
+            graphics.fill(x - 5, y - 1, x + 6, y + 2, 0xB0000000);
+            graphics.fill(x - 1, y - 5, x + 2, y + 6, 0xB0000000);
+            graphics.fill(x - 4, y, x + 5, y + 1, bright);
+            graphics.fill(x, y - 4, x + 1, y + 5, bright);
+        }
     }
 
-    private static void stroke(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
-        graphics.fill(x1 - 1, y1 - 1, x2 + 1, y2 + 1, 0xB0000000);
-        graphics.fill(x1, y1, x2, y2, color);
+    private static void drawSegment(GuiGraphics graphics, Vector4f start, Vector4f end, int color) {
+        if (start.w <= 0.05f && end.w <= 0.05f) return;
+        Vector4f a = new Vector4f(start), b = new Vector4f(end);
+        if (a.w <= 0.05f) a.lerp(b, (0.05f - a.w) / (b.w - a.w));
+        if (b.w <= 0.05f) b.lerp(a, (0.05f - b.w) / (a.w - b.w));
+        float x1 = (a.x / a.w * 0.5f + 0.5f) * graphics.guiWidth();
+        float y1 = (0.5f - a.y / a.w * 0.5f) * graphics.guiHeight();
+        float x2 = (b.x / b.w * 0.5f + 0.5f) * graphics.guiWidth();
+        float y2 = (0.5f - b.y / b.w * 0.5f) * graphics.guiHeight();
+        float dx = x2 - x1, dy = y2 - y1;
+        float[] clip = {0f, 1f};
+        if (!clip(-dx, x1, clip) || !clip(dx, graphics.guiWidth() - x1, clip)
+                || !clip(-dy, y1, clip) || !clip(dy, graphics.guiHeight() - y1, clip)) return;
+        float sx = x1 + clip[0] * dx, sy = y1 + clip[0] * dy;
+        float ex = x1 + clip[1] * dx, ey = y1 + clip[1] * dy;
+        float length = (float) Math.hypot(ex - sx, ey - sy);
+        if (length < 0.5f) return;
+        graphics.pose().pushPose();
+        graphics.pose().translate(sx, sy, 0);
+        graphics.pose().mulPose(Axis.ZP.rotation((float) Math.atan2(ey - sy, ex - sx)));
+        graphics.fill(0, -2, (int) Math.ceil(length) + 1, 3, 0xB0000000);
+        graphics.fill(0, -1, (int) Math.ceil(length), 2, color);
+        graphics.pose().popPose();
+    }
+
+    private static boolean clip(float p, float q, float[] range) {
+        if (p == 0f) return q >= 0f;
+        float t = q / p;
+        if (p < 0f) range[0] = Math.max(range[0], t);
+        else range[1] = Math.min(range[1], t);
+        return range[0] <= range[1];
     }
 
     private static String bearing(Minecraft mc, RadarScanner.Hit hit) {

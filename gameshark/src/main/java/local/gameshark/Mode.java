@@ -17,6 +17,8 @@ public enum Mode {
     LEGENDARY_SUMMONS("Legendary summons", 0xA41536),
     MAX_RAID_DENS("Max Raid Dens", 0xFF2E96),
     POKE_LOOT("Poké Loot", 0xE08338),
+    MASTER_LOOT("Master Loot", 0xA145FF),
+    BEAST_LOOT("Beast Loot", 0x52DAFF),
     POKE_STOPS("Poké Stops", 0xD9FA68),
     CHESTS("Chests", 0xB5804A),
     CHEST_MINECARTS("Minecart chests", 0xB5804A),

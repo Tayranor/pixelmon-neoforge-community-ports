@@ -65,8 +65,9 @@ public final class RadarScreen extends Screen {
             }).bounds(left, top + 22 + i * 18, 230, 17).build());
         }
         addRenderableWidget(Button.builder(Component.literal("<"), b -> { modePage = Math.max(0, modePage - 1); rebuildWidgets(); }).bounds(left, top + 168, 25, 17).build());
-        addRenderableWidget(Button.builder(Component.translatable("sharkscope.page", modePage + 1, 3), b -> {}).bounds(left + 27, top + 168, 176, 17).build());
-        addRenderableWidget(Button.builder(Component.literal(">"), b -> { modePage = Math.min(2, modePage + 1); rebuildWidgets(); }).bounds(left + 205, top + 168, 25, 17).build());
+        int pages = (modes.length + 7) / 8;
+        addRenderableWidget(Button.builder(Component.translatable("sharkscope.page", modePage + 1, pages), b -> {}).bounds(left + 27, top + 168, 176, 17).build());
+        addRenderableWidget(Button.builder(Component.literal(">"), b -> { modePage = Math.min(pages - 1, modePage + 1); rebuildWidgets(); }).bounds(left + 205, top + 168, 25, 17).build());
     }
 
     private void pokemon(int left, int top) {
